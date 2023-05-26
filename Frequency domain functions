@@ -1,0 +1,324 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyP+QaLL1+YTciUNPai61MyK",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/aditiadkar/DIP/blob/main/Frequency%20domain%20functions\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#HIGH PASS FILTERING\n",
+        "import cv2\n",
+        "import numpy as np\n",
+        "\n",
+        "# Read the image\n",
+        "image = cv2.imread('input_image.jpg', 0)  # Grayscale image\n",
+        "\n",
+        "# Perform Discrete Fourier Transform (DFT)\n",
+        "dft = np.fft.fft2(image)\n",
+        "dft_shift = np.fft.fftshift(dft)\n",
+        "\n",
+        "# Define a high-pass filter\n",
+        "rows, cols = image.shape\n",
+        "crow, ccol = rows // 2, cols // 2\n",
+        "dft_shift[crow - 30:crow + 30, ccol - 30:ccol + 30] = 0\n",
+        "\n",
+        "# Perform Inverse Fourier Transform (IFT)\n",
+        "dft_ishift = np.fft.ifftshift(dft_shift)\n",
+        "restored_image = np.fft.ifft2(dft_ishift)\n",
+        "restored_image = np.abs(restored_image)\n",
+        "\n",
+        "# Display the sharpened image\n",
+        "cv2.imshow('Sharpened Image', restored_image)\n",
+        "cv2.waitKey(0)\n",
+        "cv2.destroyAllWindows()\n"
+      ],
+      "metadata": {
+        "id": "v528VwYhSTFu"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#BAND PASS FILTERING\n",
+        "import cv2\n",
+        "import numpy as np\n",
+        "\n",
+        "# Read the image\n",
+        "image = cv2.imread('input_image.jpg', 0)  # Grayscale image\n",
+        "\n",
+        "# Perform Discrete Fourier Transform (DFT)\n",
+        "dft = np.fft.fft2(image)\n",
+        "dft_shift = np.fft.fftshift(dft)\n",
+        "\n",
+        "# Define a band-pass filter\n",
+        "rows, cols = image.shape\n",
+        "crow, ccol = rows // 2, cols // 2\n",
+        "dft_shift[:crow - 30, :] = 0\n",
+        "dft_shift[crow + 30:, :] = 0\n",
+        "dft_shift[:, :ccol - 30] = 0\n",
+        "dft_shift[:, ccol + 30:] = 0\n",
+        "\n",
+        "# Perform Inverse Fourier Transform (IFT)\n",
+        "dft_ishift = np.fft.ifftshift(dft_shift)\n",
+        "restored_image = np.fft.ifft2(dft_ishift)\n",
+        "restored_image = np.abs(restored_image)\n",
+        "\n",
+        "# Display the band-pass filtered image\n",
+        "cv2.imshow('Band-pass Filtered Image', restored_image)\n",
+        "cv2.waitKey(0)\n",
+        "cv2.destroyAllWindows()\n"
+      ],
+      "metadata": {
+        "id": "OPo8BMUzSYXN"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#NOTCH FILTERING\n",
+        "import cv2\n",
+        "import numpy as np\n",
+        "\n",
+        "# Read the image\n",
+        "image = cv2.imread('input_image.jpg', 0)  # Grayscale image\n",
+        "\n",
+        "# Perform Discrete Fourier Transform (DFT)\n",
+        "dft = np.fft.fft2(image)\n",
+        "dft_shift = np.fft.fftshift(dft)\n",
+        "\n",
+        "# Define notch filter positions\n",
+        "notch_pos = [(100, 100), (200, 200), (300, 300)]\n",
+        "\n",
+        "# Apply notch filter\n",
+        "rows, cols = image.shape\n",
+        "for pos in notch_pos:\n",
+        "    dft_shift[pos[0]-10:pos[0]+10, pos[1]-10:pos[1]+10] = 0\n",
+        "\n",
+        "# Perform Inverse Fourier Transform (IFT)\n",
+        "dft_ishift = np.fft.ifftshift(dft_shift)\n",
+        "restored_image = np.fft.ifft2(dft_ishift)\n",
+        "restored_image = np.abs(restored_image)\n",
+        "\n",
+        "# Display the notch filtered image\n",
+        "cv2.imshow('Notch Filtered Image', restored_image)\n",
+        "cv2.waitKey(0)\n",
+        "cv2.destroyAllWindows()\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "ncoA_W2QShCO"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#HOMOMORPHIC FILTERING\n",
+        "import cv2\n",
+        "import numpy as np\n",
+        "\n",
+        "# Read the image\n",
+        "image = cv2.imread('input_image.jpg', 0)  # Grayscale image\n",
+        "image_float = image.astype(np.float32) / 255.0\n",
+        "\n",
+        "# Take the logarithm of the image\n",
+        "log_image = np.log1p(image_float)\n",
+        "\n",
+        "# Perform Discrete Fourier Transform (DFT)\n",
+        "dft = np.fft.fft2(log_image)\n",
+        "dft_shift = np.fft.fftshift(dft)\n",
+        "\n",
+        "# Define high-frequency cutoff and gamma values\n",
+        "cutoff_freq = 30\n",
+        "gamma = 0.8\n",
+        "\n",
+        "# Apply homomorphic filter\n",
+        "rows, cols = image.shape\n",
+        "crow, ccol = rows // 2, cols // 2\n",
+        "mask = 1 - np.exp(-gamma * ((np.arange(rows) - crow) ** 2 + (np.arange(cols) - ccol) ** 2) / cutoff_freq ** 2)\n",
+        "dft_shift_filtered = dft_shift * mask\n",
+        "\n",
+        "# Perform Inverse Fourier Transform (IFT)\n",
+        "dft_ishift_filtered = np.fft.ifftshift(dft_shift_filtered)\n",
+        "restored_image = np.fft.ifft2(dft_ishift_filtered)\n",
+        "restored_image = np.abs(np.expm1(restored_image))\n",
+        "\n",
+        "# Display the homomorphic filtered image\n",
+        "cv2.imshow('Homomorphic Filtered Image', restored_image)\n",
+        "cv2.waitKey(0)\n",
+        "cv2.destroyAllWindows()\n"
+      ],
+      "metadata": {
+        "id": "TzdRW2epSnk8"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#WIENER FILTERING\n",
+        "import cv2\n",
+        "import numpy as np\n",
+        "\n",
+        "# Read the blurred image and kernel\n",
+        "blurred_image = cv2.imread('blurred_image.jpg', 0)  # Grayscale blurred image\n",
+        "kernel = cv2.imread('kernel.jpg', 0)  # Grayscale kernel\n",
+        "\n",
+        "# Perform Discrete Fourier Transform (DFT)\n",
+        "dft_blurred = np.fft.fft2(blurred_image)\n",
+        "dft_kernel = np.fft.fft2(kernel)\n",
+        "\n",
+        "# Apply Wiener deconvolution\n",
+        "snr = 0.01  # Signal-to-Noise Ratio\n",
+        "wiener_filter = np.conj(dft_kernel) / (np.abs(dft_kernel) ** 2 + snr)\n",
+        "dft_restored = dft_blurred * wiener_filter\n",
+        "\n",
+        "# Perform Inverse Fourier Transform (IFT)\n",
+        "restored_image = np.fft.ifft2(dft_restored)\n",
+        "restored_image = np.abs(restored_image)\n",
+        "\n",
+        "# Display the restored image\n",
+        "cv2.imshow('Restored Image', restored_image)\n",
+        "cv2.waitKey(0)\n",
+        "cv2.destroyAllWindows()\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "nE1aMMi4SvDS"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#RADON TRANSFORM\n",
+        "import cv2\n",
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt\n",
+        "\n",
+        "# Read the image\n",
+        "image = cv2.imread('input_image.jpg', 0)  # Grayscale image\n",
+        "\n",
+        "# Perform Radon transform\n",
+        "theta = np.linspace(0, 180, max(image.shape), endpoint=False)\n",
+        "sinogram = np.abs(cv2.radon(image, theta))\n",
+        "\n",
+        "# Display the sinogram\n",
+        "plt.imshow(sinogram, cmap='gray', extent=(0, 180, 0, sinogram.shape[0]))\n",
+        "plt.title('Sinogram')\n",
+        "plt.xlabel('Projection angle (degrees)')\n",
+        "plt.ylabel('Projection position')\n",
+        "plt.colorbar()\n",
+        "plt.show()\n"
+      ],
+      "metadata": {
+        "id": "DBcfhEP6S4T-"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#HISTOGRAM EQUALIZATION\n",
+        "import cv2\n",
+        "import numpy as np\n",
+        "\n",
+        "# Read the image\n",
+        "image = cv2.imread('input_image.jpg', 0)  # Grayscale image\n",
+        "\n",
+        "# Perform Discrete Fourier Transform (DFT)\n",
+        "dft = np.fft.fft2(image)\n",
+        "dft_shift = np.fft.fftshift(dft)\n",
+        "\n",
+        "# Calculate the magnitude spectrum\n",
+        "magnitude_spectrum = np.abs(dft_shift)\n",
+        "\n",
+        "# Perform histogram equalization\n",
+        "hist_equalized_spectrum = cv2.equalizeHist(np.uint8(magnitude_spectrum))\n",
+        "\n",
+        "# Reconstruct the equalized image\n",
+        "equalized_image = np.fft.ifft2(np.fft.ifftshift(hist_equalized_spectrum))\n",
+        "equalized_image = np.abs(equalized_image)\n",
+        "\n",
+        "# Display the equalized image\n",
+        "cv2.imshow('Equalized Image', equalized_image)\n",
+        "cv2.waitKey(0)\n",
+        "cv2.destroyAllWindows()\n"
+      ],
+      "metadata": {
+        "id": "4hEY_8U1S_dX"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#PHASE CORELATION\n",
+        "import cv2\n",
+        "import numpy as np\n",
+        "\n",
+        "# Read the reference and target images\n",
+        "ref_image = cv2.imread('reference_image.jpg', 0)  # Grayscale reference image\n",
+        "target_image = cv2.imread('target_image.jpg', 0)  # Grayscale target image\n",
+        "\n",
+        "# Perform Discrete Fourier Transform (DFT) for both images\n",
+        "ref_dft = np.fft.fft2(ref_image)\n",
+        "target_dft = np.fft.fft2(target_image)\n",
+        "\n",
+        "# Calculate the cross-power spectrum\n",
+        "cross_power_spectrum = np.multiply(ref_dft, np.conj(target_dft))\n",
+        "cross_power_spectrum /= np.abs(cross_power_spectrum)\n",
+        "\n",
+        "# Perform Inverse Fourier Transform (IFT) on the cross-power spectrum\n",
+        "cross_correlation = np.fft.ifft2(cross_power_spectrum)\n",
+        "\n",
+        "# Find the peak location\n",
+        "peak_loc = np.unravel_index(np.argmax(np.abs(cross_correlation)), cross_correlation.shape)\n",
+        "\n",
+        "# Display the registered images\n",
+        "cv2.imshow('Reference Image', ref_image)\n",
+        "cv2.imshow('Target Image', target_image)\n",
+        "cv2.imshow('Cross Correlation', np.abs(cross_correlation))\n",
+        "cv2.waitKey(0)\n",
+        "cv2.destroyAllWindows()\n"
+      ],
+      "metadata": {
+        "id": "2oQVfoi_TFMu"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
